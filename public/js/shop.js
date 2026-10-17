@@ -16,6 +16,37 @@ try { cf = JSON.parse(localStorage.getItem(FK) || '{}') || {}; } catch (e) { }
 const saveCart = () => { try { localStorage.setItem(CK, JSON.stringify(cart)); } catch (e) { } };
 const saveCf = () => { try { localStorage.setItem(FK, JSON.stringify(cf)); } catch (e) { } };
 
+/* ---------- favourites (kept on this device, per shop) ---------- */
+const FAVK = 'cb-fav-' + slug, FAV = '__fav';
+let favs = new Set();
+try { favs = new Set(JSON.parse(localStorage.getItem(FAVK) || '[]')); } catch (e) { }
+const saveFavs = () => { try { localStorage.setItem(FAVK, JSON.stringify([...favs])); } catch (e) { } };
+const favBtn = (c, big) => { const on = favs.has(c); return `<button class="${big ? 'btn ghost' : 'favb'}${on ? ' on' : ''}" data-fav="${esc(c)}" aria-pressed="${on}"${big ? ' style="width:100%;margin-top:8px"' : ''}>${on ? '♥ Favoriet' : '♡ Bewaar als favoriet'}</button>`; };
+function toggleFav(c) { if (favs.has(c)) favs.delete(c); else favs.add(c); saveFavs(); if (sv.t === FAV && !favs.size) sv.t = ''; render(); }
+
+/* ---------- optional house style per shop: themes/<slug>/brand.json ---------- */
+async function loadTheme() {
+  if (!/^[a-z0-9-]{3,40}$/.test(slug)) return;
+  let b;
+  try { const r = await fetch(`themes/${slug}/brand.json`, { cache: 'no-cache' }); if (!r.ok) return; b = await r.json(); } catch (e) { return; }
+  const link = href => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l); };
+  if (b.fonts) link(b.fonts);
+  if (b.css) link(b.css);
+  if (b.logo) {
+    $('brandLogo').src = b.logo; $('brandLogo').alt = b.logoAlt || '';
+    if (b.logoLink) { $('brandLink').href = b.logoLink; $('brandLink').rel = 'noopener'; }
+    $('brandKicker').textContent = b.kicker || '';
+    $('brandHead').classList.add('on');
+  }
+  const f = b.footer;
+  if (f) {
+    const site = f.site ? `<a href="${esc(f.site)}" rel="noopener">${esc(f.site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a>` : '';
+    $('brandFoot').innerHTML = (f.name ? `<b>${esc(f.name)}</b>` : '') + [f.address && esc(f.address), f.phone && `<a href="tel:${esc(f.phone.replace(/[^\d+]/g, '').replace('+310', '+31'))}">${esc(f.phone)}</a>`, f.email && `<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>`, site].filter(Boolean).join('<br>');
+    $('brandFoot').classList.add('on');
+  }
+}
+loadTheme();
+
 async function load() {
   if (!slug || !api.configured) { notFound(); return; }
   try { data = await api.getShop(slug); } catch (e) { if (!data) { $('svGrid').innerHTML = `<div class="meta" style="grid-column:1/-1;text-align:center;padding:30px">De shop kon niet geladen worden. Probeer het later opnieuw.</div>`; } return; }
@@ -33,19 +64,23 @@ function render() {
   const st = data.shop || {}, all = items();
   $('svName').textContent = st.name || 'Wijnshop'; $('svIntro').textContent = st.intro || ''; document.title = st.name || 'Wijnshop';
   const types = [...new Set(all.map(tyOf))].sort((a, b) => { const r = x => x === 'Overig' ? 99 : (TYPES.indexOf(x) >= 0 ? TYPES.indexOf(x) : 50); return r(a) - r(b) || a.localeCompare(b); });
-  $('svTypes').innerHTML = types.length > 1 ? [['', 'Alle wijnen'], ...types.map(t => [t, t])].map(([k, l]) => `<button data-t="${esc(k)}" class="${sv.t === k ? 'on' : ''}">${esc(l)}</button>`).join('') : '';
+  const favN = all.filter(i => favs.has(i.c)).length;
+  if (sv.t === FAV && !favN) sv.t = '';
+  const chips = (types.length > 1 ? [['', 'Alle wijnen'], ...types.map(t => [t, t])] : (favN ? [['', 'Alle wijnen']] : []));
+  $('svTypes').innerHTML = chips.map(([k, l]) => `<button data-t="${esc(k)}" class="${sv.t === k ? 'on' : ''}">${esc(l)}</button>`).join('')
+    + (favN ? `<button data-t="${FAV}" class="fav-chip${sv.t === FAV ? ' on' : ''}">♥ Favorieten (${favN})</button>` : '');
   const cos = [...new Set(all.map(i => i.co).filter(Boolean))].sort();
   if ($('svCo').dataset.k !== cos.join('|')) { $('svCo').dataset.k = cos.join('|'); $('svCo').innerHTML = '<option value="">Alle landen</option>' + cos.map(c => `<option>${esc(c)}</option>`).join(''); $('svCo').value = sv.co; }
   $('svCo').style.display = cos.length > 1 ? '' : 'none';
   const q = norm(sv.q).trim();
-  const list = all.filter(i => (!sv.t || tyOf(i) === sv.t) && (!sv.co || i.co === sv.co) && (!q || norm([i.n, i.v, i.co, i.r, i.s, i.cl, i.t].join(' ')).includes(q)));
+  const list = all.filter(i => (!sv.t || (sv.t === FAV ? favs.has(i.c) : tyOf(i) === sv.t)) && (!sv.co || i.co === sv.co) && (!q || norm([i.n, i.v, i.co, i.r, i.s, i.cl, i.t].join(' ')).includes(q)));
   const pv = i => i.p > 0 ? +i.p : null, yv = i => parseInt(i.v) || null;
   const cmp = { name: (a, b) => a.n.localeCompare(b.n), pa: (a, b) => (pv(a) ?? 1e9) - (pv(b) ?? 1e9), pd: (a, b) => (pv(b) ?? -1) - (pv(a) ?? -1), va: (a, b) => (yv(a) ?? 1e5) - (yv(b) ?? 1e5), vd: (a, b) => (yv(b) ?? -1) - (yv(a) ?? -1) }[sv.sort];
   list.sort((a, b) => cmp(a, b) || a.n.localeCompare(b.n));
   $('svCount').textContent = all.length ? `${list.length} ${list.length === 1 ? 'wijn' : 'wijnen'}` : '';
   $('svGrid').innerHTML = list.length ? list.slice(0, sv.shown).map(i => {
     const inC = cart[i.c] || 0;
-    return `<div class="wc" data-c="${esc(i.c)}"><div class="ty">${esc(tyOf(i))}${i.cl ? ' · ' + esc(i.cl) : ''}</div><div class="wn">${esc(i.n)} ${esc(i.v)}</div><div class="meta">${esc([i.co, i.r, i.s].filter(Boolean).join(' · '))}</div>${st.showQty ? `<div class="meta">${i.q <= 3 ? 'Nog maar ' + i.q + ' fles' + (i.q > 1 ? 'sen' : '') : i.q + ' flessen op voorraad'}</div>` : ''}<div class="ft"><span class="pr">${i.p > 0 ? eur(i.p) : '<span class="meta">Prijs op aanvraag</span>'}</span><button class="btn add${inC ? ' in' : ''}" data-add="${esc(i.c)}">${inC ? '✓ ' + inC + ' in mand' : '+ In mand'}</button></div></div>`;
+    return `<div class="wc" data-c="${esc(i.c)}"><div class="ty">${esc(tyOf(i))}${i.cl ? ' · ' + esc(i.cl) : ''}</div><div class="wn">${esc(i.n)} ${esc(i.v)}</div><div class="meta">${esc([i.co, i.r, i.s].filter(Boolean).join(' · '))}</div>${st.showQty ? `<div class="meta">${i.q <= 3 ? 'Nog maar ' + i.q + ' fles' + (i.q > 1 ? 'sen' : '') : i.q + ' flessen op voorraad'}</div>` : ''}${favBtn(i.c)}<div class="ft"><span class="pr">${i.p > 0 ? eur(i.p) : '<span class="meta">Prijs op aanvraag</span>'}</span><button class="btn add${inC ? ' in' : ''}" data-add="${esc(i.c)}">${inC ? '✓ ' + inC + ' in mand' : '+ In mand'}</button></div></div>`;
   }).join('') : `<div class="meta" style="grid-column:1/-1;text-align:center;padding:30px">${all.length ? 'Geen wijnen gevonden.' : 'Er staan op dit moment geen wijnen in de shop.'}</div>`;
   $('svMore').classList.toggle('hide', list.length <= sv.shown);
   drawFab();
@@ -58,13 +93,13 @@ $('svCo').onchange = () => { sv.co = $('svCo').value; sv.shown = 48; render(); }
 $('svSort').onchange = () => { sv.sort = $('svSort').value; render(); };
 $('svTypes').onclick = e => { const b = e.target.closest('button[data-t]'); if (!b) return; sv.t = b.dataset.t; sv.shown = 48; render(); };
 $('svMore').onclick = () => { sv.shown += 48; render(); };
-$('svGrid').onclick = e => { const a = e.target.closest('button[data-add]'); if (a) { add(a.dataset.add, 1); return; } const c = e.target.closest('.wc[data-c]'); if (c) openWine(c.dataset.c); };
+$('svGrid').onclick = e => { const fv = e.target.closest('button[data-fav]'); if (fv) { toggleFav(fv.dataset.fav); return; } const a = e.target.closest('button[data-add]'); if (a) { add(a.dataset.add, 1); return; } const c = e.target.closest('.wc[data-c]'); if (c) openWine(c.dataset.c); };
 
 function modal(html) { $('wDetail').innerHTML = `<div class="box"><button class="btn ghost" data-x="1" style="position:absolute;top:8px;right:8px">✕</button>${html}</div>`; $('wDetail').classList.add('on'); }
 const close = () => $('wDetail').classList.remove('on');
 function openWine(c) {
   const i = byCode()[c]; if (!i) return; const st = data.shop || {};
-  modal(`${photo(i) ? `<img src="${esc(photo(i))}" alt="">` : ''}<div class="meta" style="text-transform:uppercase;letter-spacing:1px;margin-right:44px">${esc(tyOf(i))}${i.cl ? ' · ' + esc(i.cl) : ''}</div><div class="nm" style="font-size:22px;margin:4px 44px 4px 0">${esc(i.n)} ${esc(i.v)}</div><div class="meta">${esc([i.co, i.r, i.s].filter(Boolean).join(' · '))}</div>${i.d ? `<p style="font-style:italic">${esc(i.d)}</p>` : ''}${st.showQty ? `<div class="meta" style="margin-top:8px">${i.q} op voorraad</div>` : ''}<div class="tot"><span>${i.p > 0 ? eur(i.p) : 'Prijs op aanvraag'}</span><span class="row" style="align-items:center"><button class="sm" data-d="-1" data-c="${esc(c)}">−</button><b style="min-width:28px;text-align:center">${cart[c] || 0}</b><button class="sm" data-d="1" data-c="${esc(c)}">+</button></span></div><button class="btn" data-cart="1" style="width:100%">Naar winkelmand</button>`);
+  modal(`${photo(i) ? `<img src="${esc(photo(i))}" alt="">` : ''}<div class="meta" style="text-transform:uppercase;letter-spacing:1px;margin-right:44px">${esc(tyOf(i))}${i.cl ? ' · ' + esc(i.cl) : ''}</div><div class="nm" style="font-size:22px;margin:4px 44px 4px 0">${esc(i.n)} ${esc(i.v)}</div><div class="meta">${esc([i.co, i.r, i.s].filter(Boolean).join(' · '))}</div>${i.d ? `<p style="font-style:italic">${esc(i.d)}</p>` : ''}${st.showQty ? `<div class="meta" style="margin-top:8px">${i.q} op voorraad</div>` : ''}<div class="tot"><span>${i.p > 0 ? eur(i.p) : 'Prijs op aanvraag'}</span><span class="row" style="align-items:center"><button class="sm" data-d="-1" data-c="${esc(c)}">−</button><b style="min-width:28px;text-align:center">${cart[c] || 0}</b><button class="sm" data-d="1" data-c="${esc(c)}">+</button></span></div><button class="btn" data-cart="1" style="width:100%">Naar winkelmand</button>${favBtn(c, true)}`);
 }
 function openCart(msg) {
   const L = cartLines(), st = data.shop || {}, t = L.reduce((a, l) => a + l.n * (l.i.p || 0), 0), pa = L.some(l => !(l.i.p > 0));
@@ -88,6 +123,7 @@ $('wDetail').addEventListener('click', async e => {
   const d = e.target.closest('button[data-d]');
   if (d) { const inCart = !!$('coName'); readForm(); add(d.dataset.c, parseInt(d.dataset.d)); if (inCart) openCart(); else openWine(d.dataset.c); return; }
   if (e.target.closest('[data-cart]')) { openCart(); return; }
+  const fv = e.target.closest('button[data-fav]'); if (fv) { toggleFav(fv.dataset.fav); openWine(fv.dataset.fav); return; }
   const o = e.target.closest('button[data-order]'); if (!o) return;
   const age = $('coAge').checked; readForm();
   if (!cf.name || !(cf.email || cf.phone)) { openCart('Vul je naam en een e-mailadres of telefoonnummer in.'); return; }

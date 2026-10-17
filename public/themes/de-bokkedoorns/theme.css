@@ -1,0 +1,58 @@
+/* Huisstijl De Bokkedoorns — alleen geladen in de webshop van deze kelder.
+   Kleuren: donkergroen #002829, goud #B19330 / #CDAD4A, wit. Letters: Playfair Display + Roboto. */
+body.shop{
+  --bg:#ffffff;--card:#ffffff;--ink:#222222;--mute:#707070;--line:#e7e2d4;
+  --wine:#b19330;--wine-ink:#ffffff;--ok:#2f6b4f;--bad:#a8322d;--warn:#b19330;
+  --brand:#002829;--gold:#b19330;--gold-2:#cdad4a;
+  color-scheme:light;background:#fff;color:#222;
+  font-family:Roboto,system-ui,sans-serif;font-weight:300;letter-spacing:.4px
+}
+body.shop button,body.shop input,body.shop select,body.shop textarea{font-family:Roboto,system-ui,sans-serif;letter-spacing:.4px}
+
+/* kop en voet */
+.brand-head{background:radial-gradient(ellipse at 18% -10%,rgba(255,255,255,.07),transparent 55%),radial-gradient(ellipse at 95% 120%,rgba(0,0,0,.35),transparent 60%),#002829;text-align:center;padding:24px 16px 18px}
+.brand-head img{height:62px;width:auto;display:block;margin:0 auto}
+.brand-kicker{color:var(--gold);font:500 12px Roboto,sans-serif;letter-spacing:4px;text-transform:uppercase;margin-top:10px}
+.brand-foot{background:#002829;color:#d8d3c4;text-align:center;padding:30px 16px 110px;font:300 12px/2 Roboto,sans-serif;letter-spacing:1px}
+.brand-foot b{display:block;font:400 18px 'Playfair Display',Georgia,serif;color:#fff;letter-spacing:.5px;margin-bottom:6px}
+.brand-foot a{color:var(--gold-2);text-decoration:none}
+#shopView{padding-bottom:40px}
+
+/* titel */
+.sh-hd{padding:34px 0 22px}
+.sh-hd h1{font:400 38px/1.15 'Playfair Display',Georgia,serif;letter-spacing:.3px;color:#111}
+.sh-hd h1::after{content:"";display:block;width:48px;height:1px;background:var(--gold);margin:16px auto 0}
+.sh-hd p{margin-top:14px;font-size:14px;line-height:1.7}
+
+/* zoekbalk en filters */
+body.shop input,body.shop select,body.shop textarea{border-radius:0;background:#fff;border-color:#d9d3c2}
+body.shop input:focus,body.shop select:focus,body.shop textarea:focus{outline:1px solid var(--gold);border-color:var(--gold)}
+.chips button{border-radius:0;text-transform:uppercase;letter-spacing:2px;font:500 11px Roboto,sans-serif;padding:9px 14px;background:#fff}
+.chips button.on{background:#002829;border-color:#002829;color:#fff}
+.chips button.fav-chip{color:var(--gold);border-color:var(--gold)}
+.chips button.fav-chip.on{background:var(--gold);color:#fff}
+.sh-count{text-transform:uppercase;letter-spacing:2px;font-size:11px}
+
+/* wijnkaarten */
+.grid{gap:14px}
+.wc{border-radius:0;border-color:var(--line);padding:18px;transition:border-color .15s,box-shadow .15s}
+.wc:hover{border-color:var(--gold);box-shadow:0 6px 18px rgba(0,40,41,.08)}
+.wc .ty{color:var(--gold);letter-spacing:2.5px;font-weight:500}
+.wc .wn{font:400 19px/1.3 'Playfair Display',Georgia,serif;letter-spacing:.2px;color:#111}
+.wc .meta,.ci .meta{letter-spacing:.6px}
+.pr{font:400 21px 'Playfair Display',Georgia,serif;color:#111}
+
+/* knoppen */
+body.shop .btn{border-radius:0;text-transform:uppercase;letter-spacing:2px;font:500 12px Roboto,sans-serif;padding:12px 18px}
+body.shop .btn.ghost{color:var(--gold);border-color:var(--gold)}
+body.shop .add{padding:10px 14px;font-size:11px}
+body.shop .add.in{background:#002829;color:#fff}
+body.shop .sm{border-radius:0}
+.favb{color:var(--gold)}
+#cartFab{border-radius:0;background:#002829;color:#fff;border-top:2px solid var(--gold);font-size:12px;padding:15px 20px}
+
+/* venster */
+#wDetail .box{border-radius:0;border-top:3px solid var(--gold)}
+#wDetail .nm{font-family:'Playfair Display',Georgia,serif;font-weight:400}
+.tot{font:400 22px 'Playfair Display',Georgia,serif}
+body.shop .card{border-radius:0;background:#f8f6f0;border-color:var(--line)}

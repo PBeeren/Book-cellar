@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="shop shoponly">
+<header class="brand-head" id="brandHead"><a id="brandLink"><img id="brandLogo" alt=""></a><div class="brand-kicker" id="brandKicker"></div></header>
 <div id="shopView">
   <div class="sh-hd"><h1 id="svName">Wijnshop</h1><p id="svIntro"></p></div>
   <div class="sh-bar"><input id="svQ" placeholder="Zoek op naam, streek, jaar…"><select id="svCo"><option value="">Alle landen</option></select><select id="svSort"><option value="name">Naam A–Z</option><option value="pa">Prijs laag → hoog</option><option value="pd">Prijs hoog → laag</option><option value="va">Jaar oud → jong</option><option value="vd">Jaar jong → oud</option></select></div>
@@ -15,6 +16,7 @@
   <div class="grid" id="svGrid"><div class="meta" style="grid-column:1/-1;text-align:center;padding:30px">Laden…</div></div>
   <div style="text-align:center;margin-top:14px"><button class="btn ghost hide" id="svMore">Meer wijnen tonen</button></div>
 </div>
+<footer class="brand-foot" id="brandFoot"></footer>
 <button class="btn" id="cartFab">🛒 Winkelmand</button>
 <div id="wDetail"></div>
 <script type="module" src="js/shop.js"></script>

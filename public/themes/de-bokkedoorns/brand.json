@@ -1,0 +1,15 @@
+{
+  "css": "themes/de-bokkedoorns/theme.css",
+  "fonts": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Roboto:wght@300;400;500&display=swap",
+  "logo": "themes/de-bokkedoorns/logo.png",
+  "logoAlt": "De Bokkedoorns",
+  "logoLink": "https://www.bokkedoorns.nl",
+  "kicker": "Wijnkelder",
+  "footer": {
+    "name": "Restaurant De Bokkedoorns",
+    "address": "Zeeweg 53, 2051 EB Overveen",
+    "phone": "+31 (0)23 526 36 00",
+    "email": "info@bokkedoorns.nl",
+    "site": "https://www.bokkedoorns.nl"
+  }
+}

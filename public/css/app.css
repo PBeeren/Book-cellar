@@ -114,3 +114,9 @@ textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px
 .switch input{width:auto}
 #loading{text-align:center;padding:30vh 16px;color:var(--mute);font:15px system-ui,sans-serif}
 .badge.hide{display:none}
+/* ---------- favourites & optional brand header/footer ---------- */
+.favb{background:none;border:0;color:var(--wine);font:500 11px system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;padding:6px 0 0;cursor:pointer;text-align:left;align-self:flex-start}
+.favb.on{font-weight:700}
+.favb:hover{text-decoration:underline}
+.brand-head,.brand-foot{display:none}
+.brand-head.on,.brand-foot.on{display:block}
