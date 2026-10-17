@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wijnshop</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="shop shoponly">
+<div id="shopView">
+  <div class="sh-hd"><h1 id="svName">Wijnshop</h1><p id="svIntro"></p></div>
+  <div class="sh-bar"><input id="svQ" placeholder="Zoek op naam, streek, jaar…"><select id="svCo"><option value="">Alle landen</option></select><select id="svSort"><option value="name">Naam A–Z</option><option value="pa">Prijs laag → hoog</option><option value="pd">Prijs hoog → laag</option><option value="va">Jaar oud → jong</option><option value="vd">Jaar jong → oud</option></select></div>
+  <div class="chips" id="svTypes"></div>
+  <div class="sh-count" id="svCount"></div>
+  <div class="grid" id="svGrid"><div class="meta" style="grid-column:1/-1;text-align:center;padding:30px">Laden…</div></div>
+  <div style="text-align:center;margin-top:14px"><button class="btn ghost hide" id="svMore">Meer wijnen tonen</button></div>
+</div>
+<button class="btn" id="cartFab">🛒 Winkelmand</button>
+<div id="wDetail"></div>
+<script type="module" src="js/shop.js"></script>
+</body>
+</html>

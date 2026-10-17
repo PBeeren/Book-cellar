@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cellar Book</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="auth">
+  <h1>🍷 <span id="appName">Cellar Book</span></h1>
+  <div class="sub" style="text-align:center" id="tagline">Wine inventory, wine list and webshop</div>
+
+  <div class="card" id="cfgWarn" style="display:none">
+    <div class="err">Not connected to a database yet. Fill in <b>js/config.js</b> (see README).</div>
+  </div>
+
+  <!-- sign in / sign up / reset -->
+  <div class="card" id="vAuth" style="display:none">
+    <div class="tabs" style="margin-bottom:12px"><button class="tab on" data-m="in">Sign in</button><button class="tab" data-m="up">Create account</button></div>
+    <input id="aEmail" type="email" placeholder="E-mail" autocomplete="email">
+    <input id="aPass" type="password" placeholder="Password (min. 8 characters)" autocomplete="current-password">
+    <button class="btn" id="aGo" style="width:100%">Sign in</button>
+    <div id="aMsg"></div>
+    <button class="linkbtn" id="aForgot">Forgot password?</button>
+  </div>
+
+  <!-- choose new password after reset link -->
+  <div class="card" id="vNewPass" style="display:none">
+    <div class="nm" style="margin-bottom:8px">Choose a new password</div>
+    <input id="npPass" type="password" placeholder="New password (min. 8 characters)" autocomplete="new-password">
+    <button class="btn" id="npGo" style="width:100%">Save password</button>
+    <div id="npMsg"></div>
+  </div>
+
+  <!-- cellar picker -->
+  <div id="vPick" style="display:none">
+    <div class="card"><div class="topbar"><div class="nm">Your cellars</div><button class="linkbtn" id="out">Sign out</button></div>
+      <div class="meta" id="who" style="margin-bottom:6px"></div>
+      <div id="cellars"></div></div>
+    <div class="card">
+      <div class="nm" style="margin-bottom:8px">New cellar</div>
+      <input id="ncName" placeholder="Name (e.g. Restaurant De Kelder)">
+      <input id="ncSlug" placeholder="Web address for the shop (e.g. de-kelder)">
+      <div class="meta" id="ncHint" style="margin-bottom:8px"></div>
+      <button class="btn" id="ncGo" style="width:100%">Create cellar</button>
+      <div id="ncMsg"></div>
+      <div class="note">Were you invited by a restaurant? Sign in with the e-mail address the invitation was sent to and the cellar appears above.</div>
+    </div>
+  </div>
+  <div id="loading">Loading…</div>
+</div>
+<script type="module" src="js/home.js"></script>
+</body>
+</html>

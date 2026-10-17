@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cellar Book</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="loading">Loading your cellar…</div>
+<div class="wrap" id="main" style="display:none">
+  <div class="topbar"><h1>🍷 <span id="cName">Cellar Book</span></h1><a href="index.html?pick">Switch cellar</a></div>
+  <div class="sub" id="sync">Loading…</div>
+  <div class="sub" id="who" style="margin-top:-8px"></div>
+  <div class="tabs">
+    <button class="tab on" data-t="scan">Scan</button>
+    <button class="tab" data-t="stock">Inventory</button>
+    <button class="tab" data-t="orders">Orders<span class="badge hide" id="ordBadge"></span></button>
+    <button class="tab" data-t="log">History</button>
+    <button class="tab" data-t="labels">Labels</button>
+    <button class="tab" data-t="wl">Wine list</button>
+    <button class="tab" data-t="settings">Settings</button>
+  </div>
+
+  <section id="scan">
+    <div class="mode">
+      <button class="in on" id="mIn">⬇ Bottle IN</button>
+      <button class="out" id="mOut">⬆ Bottle OUT</button>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="card">
+      <video id="cam" playsinline muted></video>
+      <input id="place" placeholder="Storage place no. (e.g. A12) — used when scanning IN" style="margin-bottom:8px">
+      <div class="row">
+        <input id="code" inputmode="numeric" placeholder="Scan or type barcode, press Enter" autocomplete="off">
+        <button class="btn" id="go">OK</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn ghost" id="camBtn" style="flex:1">📷 Start camera</button>
+      </div>
+      <div class="note">A USB/Bluetooth barcode scanner works too: click the field and scan.</div>
+    </div>
+    <div class="card form" id="newForm">
+      <div class="nm" style="margin-bottom:8px">New wine — barcode <span id="newCode"></span></div>
+      <input id="fName" placeholder="Wine name (e.g. Barolo Cannubi)">
+      <div class="row"><input id="fVint" placeholder="Vintage" inputmode="numeric"><input id="fLoc" placeholder="Place no. (e.g. A12)"></div>
+      <div class="row" style="margin-top:8px"><input id="fPrice" placeholder="Cost price € (optional)" inputmode="decimal"><input id="fQty" placeholder="Bottles" inputmode="numeric" value="1"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="fSave" style="flex:1">Save &amp; register</button><button class="btn ghost" id="fCancel">Cancel</button></div>
+    </div>
+    <div class="card" id="scanLogCard"><div class="meta" style="margin-bottom:4px">Last scans</div><div id="scanLog"><div class="meta">Nothing scanned yet.</div></div></div>
+  </section>
+
+  <section id="stock" class="hide">
+    <div class="stats"><div class="stat"><b id="sWin">0</b><span>wines in stock</span></div><div class="stat mgr-only"><b id="sVal">€0</b><span>cost value</span></div></div>
+    <div class="row" style="margin-bottom:10px"><button class="btn" id="newWine" style="flex:1">+ New wine</button><button class="btn ghost" id="impBtn" style="flex:1">⬆ Import</button></div>
+    <button class="btn ghost" id="prBtn" style="width:100%;margin-bottom:10px">⚙ Pricing rule (cost → menu price)</button>
+    <div class="card form" id="prCard">
+      <div class="meta" style="margin-bottom:8px">Menu price = cost price × factor, rounded up to the step you choose. You can always overwrite the price by hand on any wine.</div>
+      <div class="row"><input id="prF" inputmode="decimal" placeholder="Factor, e.g. 3"><select id="prR"><option value="0">No rounding</option><option value="0.5">Up to €0.50</option><option value="1">Up to €1</option><option value="5">Up to €5</option></select></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="prSave" style="flex:1">Save rule</button><button class="btn ghost" id="prAll">Recalculate all</button><button class="btn ghost" id="prClose">Close</button></div>
+      <div class="note" id="prMsg"></div>
+    </div>
+    <div class="card form" id="impCard">
+      <div class="meta" style="margin-bottom:8px">Choose an .xlsx or .csv file (row 1 = column headers: Barcode, Name, Vintage, Type, Country, Region, Sub-region, Classification, Cost price, Menu price, Shop price, Bottles, Place — English or Dutch; only Name is required), or a Cellar Book backup (.json).</div>
+      <input type="file" id="impFile" accept=".xlsx,.xls,.csv,.tsv,.txt,.json">
+      <div class="note" id="impInfo"></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="impGo" style="flex:1" disabled>Import</button><button class="btn ghost" id="impTpl">Template</button><button class="btn ghost" id="impClose">Close</button></div>
+    </div>
+    <div class="card form" id="editor">
+      <div class="nm" style="margin-bottom:8px">Wine details</div>
+      <input id="eCode" placeholder="Barcode / label code">
+      <input id="eName" placeholder="Wine name">
+      <div class="row"><input id="eVint" placeholder="Vintage" inputmode="numeric"><input id="ePrice" class="mgr-only" placeholder="Cost price €" inputmode="decimal"></div>
+      <input id="eType" list="dlType" placeholder="Type: mousserend, wit, rood, rosé or your own (e.g. oranje, dessert)">
+      <datalist id="dlType"></datalist>
+      <div class="row"><input id="eCountry" list="dlCountry" placeholder="Country"><input id="eRegion" list="dlRegion" placeholder="Region (e.g. Bourgogne)"></div>
+      <div class="row"><input id="eSub" list="dlSub" placeholder="Sub-region / appellation"><input id="eClass" list="dlClass" placeholder="Grand Cru, Premier Cru…"></div>
+      <div class="row mgr-only" style="align-items:flex-start"><input id="eSell" placeholder="Menu price € (auto from cost, editable)" inputmode="decimal"><button class="btn ghost" id="eAuto" type="button">↻ Auto</button></div>
+      <div class="row mgr-only" style="align-items:center"><input id="eShop" placeholder="Webshop price € (blank = auto)" inputmode="decimal"><label class="meta" style="white-space:nowrap;margin-bottom:8px"><input type="checkbox" id="eNoShop" style="width:auto"> Hide from shop</label></div>
+      <input id="eListName" placeholder="Text on the wine list (optional, replaces name + vintage)">
+      <textarea id="eDesc" rows="3" placeholder="Description / tasting note (optional)"></textarea>
+      <img id="ePhImg" class="ph" alt="">
+      <div class="row" id="ePhRow" style="margin-bottom:8px"><button class="btn ghost" id="ePhAdd" type="button" style="flex:1">📷 Add / change photo</button><button class="btn ghost hide" id="ePhDel" type="button">Remove</button></div>
+      <input type="file" id="ePhFile" accept="image/*" class="hide">
+      <div class="meta" id="ePhMsg" style="margin-bottom:8px"></div>
+      <datalist id="dlClass"><option>Grand Cru</option><option>Premier Cru</option><option>Village</option><option>Regional</option></datalist><datalist id="dlCountry"></datalist><datalist id="dlRegion"></datalist><datalist id="dlSub"></datalist>
+      <div class="meta" style="margin:8px 0 4px">Storage places: just the place numbers (e.g. A12). The number of bottles is the total below.</div>
+      <div id="ePlRows"></div><button class="btn ghost" id="ePlAdd" type="button" style="margin-bottom:8px">+ Add place</button>
+      <div class="mgr-only"><div class="meta" style="margin-bottom:4px">Bottles in stock</div><input id="eQty" inputmode="numeric" placeholder="0"></div>
+      <div class="row" style="margin-top:6px"><button class="btn" id="eSave" style="flex:1">Save</button><button class="btn ghost" id="eCancel">Cancel</button><button class="btn ghost mgr-only" id="eDel" style="color:var(--bad)">Delete wine</button></div>
+    </div>
+    <button class="btn ghost mgr-only" id="dupBar" style="width:100%;margin-bottom:10px;display:none;color:var(--warn)"></button>
+    <div class="card form" id="dupCard"></div>
+    <input id="q" placeholder="Search name, vintage, shelf…" style="margin-bottom:10px">
+    <div class="row mgr-only" style="margin-bottom:10px;flex-wrap:wrap"><button class="btn ghost" id="selBtn" style="flex:1">☑ Select</button><button class="btn ghost" id="expBtn">⬇ Export CSV</button><button class="btn ghost hide" id="selAll">Select all shown</button><input id="selType" list="dlType" class="hide" placeholder="Set type, then Enter" style="width:150px"><button class="btn hide" id="selDel" style="background:var(--bad);color:#fff" disabled>Delete (0)</button></div>
+    <div class="meta" style="margin-bottom:4px">Sort by (tap again to reverse):</div>
+    <div class="sortbar" id="sortBar"></div>
+    <div class="card" id="list"></div>
+  </section>
+
+  <section id="orders" class="hide">
+    <div class="chips" id="ordFilter"></div>
+    <div class="card" id="ordList"><div class="meta">No orders yet.</div></div>
+  </section>
+
+  <section id="log" class="hide"><div class="card" id="logList"></div></section>
+
+  <section id="wl" class="hide">
+    <div class="card"><input id="wlTitle" value="Wine List" style="margin-bottom:8px">
+      <textarea id="wlIntro" rows="2" placeholder="Intro text under the title (optional)"></textarea>
+      <label class="meta"><input type="checkbox" id="wlByType" checked style="width:auto"> Divide by type (mousserend, wit, rood, rosé)</label><br>
+      <label class="meta"><input type="checkbox" id="wlStock" checked style="width:auto"> Only wines in stock</label><br>
+      <label class="meta"><input type="checkbox" id="wlPrice" checked style="width:auto"> Show menu prices</label><br>
+      <label class="meta"><input type="checkbox" id="wlGC" style="width:auto"> Grand Cru only</label><br>
+      <label class="meta"><input type="checkbox" id="wlDesc" style="width:auto"> Show descriptions in the list</label>
+      <textarea id="wlFoot" rows="2" placeholder="Footer text at the end of the list (optional)" style="margin-top:8px"></textarea>
+      <select id="wlSort"><option value="asc">Sort within sub-region: price low → high</option><option value="desc">Sort within sub-region: price high → low</option><option value="cls">Sort within sub-region: classification, then name</option></select>
+      <button class="btn ghost" id="guestBtn" style="width:100%;margin-top:10px">👥 Guest view (tap a wine for photo &amp; details)</button>
+      <button class="btn ghost mgr-only" id="wlArr" style="width:100%;margin-top:8px">↕ Arrange order</button>
+      <div class="row" style="margin-top:8px"><button class="btn" id="wlPrint" style="flex:1">🖨 Print</button><select id="wlFmt" style="flex:1"><option value="html">HTML (interactive, with photos)</option><option value="csv">CSV (Excel)</option><option value="pdf">PDF</option></select><button class="btn ghost" id="wlDl" style="flex:1">⬇ Download</button></div>
+      <div class="note" id="wlMsg">Fill in country, region, sub-region and classification per wine (Inventory → ✎).</div></div>
+    <div class="card wl" id="wlOut"></div>
+  </section>
+
+  <section id="labels" class="hide">
+    <div class="card"><div class="meta" style="margin-bottom:8px">Tick the wines and set how many labels you need. Each label carries a scannable barcode (Code 128) that this app recognises.</div>
+      <div class="row"><button class="btn ghost" id="lAll" style="flex:1">Select all</button><button class="btn ghost" id="lNone" style="flex:1">Clear</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="lPrint" style="flex:1">🖨 Print labels</button><button class="btn ghost" id="lDl" style="flex:1">⬇ Download</button></div>
+      <div class="note" id="lMsg">If printing is blocked, use Download and open the file to print it.</div></div>
+    <div class="card" id="lblList"></div>
+  </section>
+
+  <section id="settings" class="hide">
+    <div class="card">
+      <div class="nm" style="margin-bottom:8px">Webshop</div>
+      <div class="meta" id="shStatus"></div>
+      <div class="linkrow" style="margin:8px 0"><input id="shLink" readonly><button class="btn ghost" id="shCopy">Copy</button><a class="btn ghost" id="shOpen" target="_blank" rel="noopener" style="text-decoration:none">Open</a></div>
+      <div class="mgr-only">
+        <label class="switch"><input type="checkbox" id="shOn"> Shop is open for orders</label>
+        <input id="shName" placeholder="Shop name">
+        <textarea id="shIntro" rows="2" placeholder="Welcome text for customers (optional)"></textarea>
+        <div class="row"><input id="shEmail" type="email" placeholder="Contact e-mail"><input id="shPhone" inputmode="tel" placeholder="Contact phone / WhatsApp"></div>
+        <textarea id="shNote" rows="2" placeholder="Pick-up / delivery / payment info shown at checkout (optional)"></textarea>
+        <div class="meta" style="margin:4px 0">Shop price = cost price × factor, rounded up. Set a fixed shop price per wine in Inventory → ✎.</div>
+        <div class="row"><input id="shF" inputmode="decimal" placeholder="Factor, e.g. 1.8"><select id="shR"><option value="0">No rounding</option><option value="0.5">Up to €0.50</option><option value="1">Up to €1</option><option value="5">Up to €5</option></select></div>
+        <label class="meta"><input type="checkbox" id="shQty" style="width:auto"> Show customers how many bottles are left</label>
+        <button class="btn" id="shSave" style="width:100%;margin-top:10px">Save shop settings</button>
+        <div class="note" id="shMsg"></div>
+      </div>
+    </div>
+    <div class="card mgr-only">
+      <div class="nm" style="margin-bottom:8px">Team</div>
+      <div id="team"></div>
+      <div class="row" style="margin-top:10px"><input id="invEmail" type="email" placeholder="E-mail of new team member"><select id="invRole" style="width:auto"><option value="employee">Employee</option><option value="manager">Manager</option></select></div>
+      <button class="btn" id="invGo" style="width:100%;margin-top:8px">Invite</button>
+      <div class="note" id="invMsg">Employees scan bottles in and out, handle orders and edit wine details. Managers can also change prices and stock, import, delete and manage the team. The invited person creates an account with this e-mail address and gets access automatically.</div>
+    </div>
+    <div class="card">
+      <div class="nm" style="margin-bottom:8px">Cellar &amp; account</div>
+      <div class="mgr-only"><div class="row"><input id="cNameIn" placeholder="Cellar name"><button class="btn ghost" id="cNameSave">Save</button></div></div>
+      <div class="row" style="margin-top:8px"><button class="btn ghost mgr-only" id="bkBtn" style="flex:1">⬇ Backup (JSON)</button><button class="btn ghost" id="signOut" style="flex:1">Sign out</button></div>
+      <div class="note" id="acctMsg"></div>
+    </div>
+  </section>
+</div>
+
+<div id="wDetail"></div>
+<button class="btn ghost" id="guestExit">Staff</button>
+<div id="sheet"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
